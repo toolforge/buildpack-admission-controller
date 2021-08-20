@@ -1,0 +1,24 @@
+version: v4
+
+variants:
+  build:
+    base: docker-registry.wikimedia.org/golang:latest
+    apt: { packages: [ca-certificates, g++, gcc, git] }
+    builder:
+      requirements: [go.mod, go.sum]
+      command:
+        - sh
+        - -c
+        - >-
+          go mod download &&
+          go mod verify &&
+          go get -u golang.org/x/lint/golint
+    copies: [local]
+    runs:
+      insecurely: true
+  lint:
+    includes: [build]
+    entrypoint: [golint, ./...]
+  test:
+    includes: [build]
+    entrypoint: [go, test, ./...]

@@ -1,0 +1,4 @@
+bases:
+- ../../deploy-base
+resources:
+- webhook.yaml
