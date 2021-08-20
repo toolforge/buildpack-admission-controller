@@ -70,12 +70,12 @@ spec:
           secret:
             secretName: buildpack-admission-certs
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: buildpack-admission
 webhooks:
-  - name: buildpack-admission.tools.wmflabs.org
+  - name: buildpack-admission.buildpack-admission.svc.cluster.local
     clientConfig:
       service:
         name: buildpack-admission
@@ -84,12 +84,7 @@ webhooks:
       caBundle: --CA_BUNDLE--
     rules:
       - operations: ["CREATE","UPDATE"]
-        apiGroups: ["networking.k8s.io", "extensions"]
-        apiVersions: ["v1"]
-        resources: ["buildpacks"]
-    failurePolicy: Ignore
-    namespaceSelector:
-      matchExpressions:
-        - key: name
-          operator: NotIn
-          values: ["tool-fourohfour"]
+        apiGroups: ["tekton.dev"]
+        apiVersions: ["v1beta1"]
+        resources: ["pipelinerun"]
+    failurePolicy: Fail
