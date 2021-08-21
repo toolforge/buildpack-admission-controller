@@ -16,3 +16,6 @@ webhooks:
         apiVersions: ["v1beta1"]
         resources: ["pipelineruns"]
     failurePolicy: Fail
+    sideEffects: None
+    admissionReviewVersions: ["v1", "v1beta1"]
+    matchPolicy: Equivalent
