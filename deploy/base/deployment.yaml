@@ -19,10 +19,14 @@ spec:
     spec:
       containers:
         - name: webhook
-          image: docker-registry.tools.wmflabs.org/buildpack-admission:latest
+          image: buildpack-admission
           env:
             - name: "DEBUG"
               value: "false"
+            - name: "ALLOWEDDOMAINS"
+              value: "harbor.toolforge.org,harbor.toolsbeta.wmflabs.org"
+            - name: "SYSTEMUSERS"
+              value: "system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"
           resources:
             limits:
               memory: 50Mi

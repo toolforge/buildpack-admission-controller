@@ -1,0 +1,8 @@
+commonLabels:
+  name: buildpack-admission
+resources:
+  - namespace.yaml
+  - service.yaml
+  - rbac.yaml
+  - deployment.yaml
+  - webhook.yaml

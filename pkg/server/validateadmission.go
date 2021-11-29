@@ -14,8 +14,9 @@ import (
 
 // PipelineRunAdmission type is where the project is stored and the handler method is linked
 type PipelineRunAdmission struct {
-	Domains  []string
-	Builders []string
+	AllowedDomains  []string
+	SystemUsers     []string
+	AllowedBuilders []string
 }
 
 // HandleAdmission is the logic of the whole webhook, really.  This is where
@@ -38,29 +39,44 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 	logrus.Debugf("AdmissionReview for Kind=%v, Namespace=%v Name=%v (%v) UID=%v patchOperation=%v UserInfo=%v",
 		req.Kind, req.Namespace, req.Name, pipelinerun.Name, req.UID, req.Operation, req.UserInfo)
 
-	domstr := strings.Join(p.Domains, "|")
-	buildstr := strings.Join(p.Builders, "|")
+	domstr := strings.Join(p.AllowedDomains, "|")
+	buildstr := strings.Join(p.AllowedBuilders, "|")
 	user := req.UserInfo.Username
+	acceptedUser := false
+	logrus.Debugf("Validating user")
+	for _, au := range p.SystemUsers {
+		logrus.Debugf("checking against	%v user %v", au, user)
+		if au == user {
+			logrus.Debugf("Found allowed user, accepting (allowed one %v): %v", au, user)
+			acceptedUser = true
+			break
+		}
+	}
 	for _, param := range pipelinerun.Spec.Params {
-		harborRe := regexp.MustCompile(fmt.Sprintf("^%s/%s/", domstr, user))
+		expectedURL := fmt.Sprintf("^(https?://)?%s/%s/", domstr, user)
+		harborRe := regexp.MustCompile(expectedURL)
 		builderRe := regexp.MustCompile(fmt.Sprintf("^%s$", buildstr))
 		logrus.Debugf("Found PipeLineRun param: %v", param.Name)
-		if param.Name == "APP_IMAGE" && !harborRe.MatchString(param.Value.StringVal) {
-			review.Response = &admissionv1.AdmissionResponse{
-				UID:     review.Request.UID,
-				Allowed: false,
-				Result:  &metav1.Status{Message: fmt.Sprintf("Harbor path invalid: %s", param.Value.StringVal)},
+		if param.Name == "APP_IMAGE" {
+			if !acceptedUser && !harborRe.MatchString(param.Value.StringVal) {
+				logrus.Debugf("Validating APP_IMAGE")
+				review.Response = &admissionv1.AdmissionResponse{
+					UID:     review.Request.UID,
+					Allowed: false,
+					Result:  &metav1.Status{Message: fmt.Sprintf("Harbor domain (gotten %s) not matching AllowedDomains (expected %s) nor the user (gotten %s) matches any of the system users (expected %s).", param.Value.StringVal, expectedURL, user, p.SystemUsers)},
+				}
+				return nil
 			}
-			return nil
 		}
 		if param.Name == "BUILDER_IMAGE" && !builderRe.MatchString(param.Value.StringVal) {
+			logrus.Debugf("Validating BUILDER_IMAGE")
 			fmt.Printf("builder: %v\n", param.Value.StringVal)
 			logrus.Debugf("Found builder: %v", param.Value.StringVal)
 			review.Response = &admissionv1.AdmissionResponse{
 				UID:     review.Request.UID,
 				Allowed: false,
 				Result: &metav1.Status{
-					Message: "Disallowed builder",
+					Message: fmt.Sprintf("Builder (gotten %s) does not match AllowedBuilders (expected %s).", param.Name, buildstr),
 				},
 			}
 			return nil
