@@ -1,0 +1,21 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: buildpack-admission
+webhooks:
+  - name: buildpack-admission.buildpack-admission.svc.tools.local
+    clientConfig:
+      caBundle: PLACEHOLDER=
+      service:
+        name: buildpack-admission
+        namespace: buildpack-admission
+        path: "/"
+    rules:
+      - operations: ["CREATE","UPDATE"]
+        apiGroups: ["tekton.dev"]
+        apiVersions: ["v1beta1"]
+        resources: ["pipelineruns"]
+    failurePolicy: Fail
+    sideEffects: None
+    admissionReviewVersions: ["v1", "v1beta1"]
+    matchPolicy: Equivalent

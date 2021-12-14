@@ -6,7 +6,7 @@ users are not setting ingress values that could interfere with other users.
 ## Use and development
 
 This is pending adaption to Toolforge.  Currently it depends on local docker images and it
-can be built and deployed on Kubernetes by insuring any node it is expected to run on
+can be built and deployed on Kubernetes by ensuring any node it is expected to run on
 has access to the image it uses.  The image will need to be in a registry most likely when deployed.
 
 It was developed using [Go Modules](https://github.com/golang/go/wiki/Modules), which will
@@ -18,18 +18,19 @@ these external go libraries:
 	* k8s.io/api
 	* k8s.io/apimachinery
 
-To build on minikube and launch, follow these steps:
+To build on minikube and launch, follow these steps, from the root of the repo:
 
 * `eval $(minikube docker-env)`
 * `docker build -t buildpack-admission:latest .`
 
-That creates the image on minikube's docker daemon.  Then to launch the service:
+That creates the image on minikube's docker daemon. Then to launch the service:
 
-NOTE: Before you run ca-bundle.sh on MacOS, read the comments in that file and adjust accordingly
+* `./utils/regenerate_certs.sh`  <-- creates a new certificate, a CSR to sign it, and a k8s secret with the signed cert and key
+* `./utils/realize_patch.sh deploy/devel/webhook.patch.yaml.tpl` <-- generates the patch to override the ca bundle with the k8s secret we just created
+* `kubectl apply -k deploy/devel` <-- Deploys the dev environment
 
-* `./get-cert.sh`  <-- creates a CSR and a secret with the TLS cert and key
-* `./ca-bundle.sh` <-- places the correct ca-bundle in the service.yaml file
-* `kubectl apply -f service.yaml`
+If everything goes well, you should see the new `buildpack-admission` namespace with a couple pods running:
+* `kubectl get all -n buildpack-admission`
 
 As long as a suitable image can be placed where needed on toolforge, which can be done locally if
 node affinity is used or some similar mechanism to prevent it being needed on every
@@ -54,5 +55,6 @@ the Dockerfile won't work.
 ## Updating the certs
 
 Certificates created with the Kubernetes API are valid for one year. When upgrading Kubernetes (or whenever necessary)
-it is wise to rotate the certs for this service. To do so simply run (as cluster admin or root@control host) `root@tools-k8s-control-1:# ./get-cert.sh`. That will recreate the cert secret. Then delete the existing pods to ensure
-that the golang web services are serving the new cert.
+it is wise to rotate the certs for this service. To do so simply run (as cluster admin or root@control host)
+`root@tools-k8s-control-1:# ./utils/regenerate_certs.sh`. That will recreate the cert secret. Then delete the existing pods to ensure
+that the golang web services are serving the new cert or do a rolling restart: `kubectl rollout restart -n buildpack-admission deployment/buildpack-admission`
