@@ -82,7 +82,7 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 		if param.Name == "BUILDER_IMAGE" {
 			logrus.Debugf("Validating BUILDER_IMAGE")
 			logrus.Debugf("Found builder: %v", param.Value.StringVal)
-			fmt.Printf("builder: %v\n", param.Value.StringVal)
+			logrus.Debugf("builder: %v\n", param.Value.StringVal)
 			if builderRe.MatchString(param.Value.StringVal) {
 				logrus.Debugf("BUILDER_IMAGE: ok")
 				continue
