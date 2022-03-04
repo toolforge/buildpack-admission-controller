@@ -41,6 +41,7 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 
 	domstr := strings.Join(p.AllowedDomains, "|")
 	buildstr := strings.Join(p.AllowedBuilders, "|")
+	builderRe := regexp.MustCompile(fmt.Sprintf("^%s$", buildstr))
 	user := req.UserInfo.Username
 	acceptedUser := false
 	logrus.Debugf("Validating user")
@@ -55,23 +56,38 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 	for _, param := range pipelinerun.Spec.Params {
 		expectedURL := fmt.Sprintf("^(https?://)?%s/%s/", domstr, user)
 		harborRe := regexp.MustCompile(expectedURL)
-		builderRe := regexp.MustCompile(fmt.Sprintf("^%s$", buildstr))
 		logrus.Debugf("Found PipeLineRun param: %v", param.Name)
 		if param.Name == "APP_IMAGE" {
-			if !acceptedUser && !harborRe.MatchString(param.Value.StringVal) {
-				logrus.Debugf("Validating APP_IMAGE")
-				review.Response = &admissionv1.AdmissionResponse{
-					UID:     review.Request.UID,
-					Allowed: false,
-					Result:  &metav1.Status{Message: fmt.Sprintf("Harbor domain (gotten %s) not matching AllowedDomains (expected %s) nor the user (gotten %s) matches any of the system users (expected %s).", param.Value.StringVal, expectedURL, user, p.SystemUsers)},
-				}
-				return nil
+			logrus.Debugf("Validating APP_IMAGE")
+			if acceptedUser || harborRe.MatchString(param.Value.StringVal) {
+				logrus.Debugf("APP_IMAGE: ok")
+				continue
 			}
+			logrus.Debugf("APP_IMAGE: not ok")
+			review.Response = &admissionv1.AdmissionResponse{
+				UID:     review.Request.UID,
+				Allowed: false,
+				Result: &metav1.Status{
+					Message: fmt.Sprintf(
+						"Harbor domain (gotten %s) not matching AllowedDomains (expected %s) nor the user (gotten %s) matches any of the "+
+							"system users (expected %s).",
+						param.Value.StringVal,
+						expectedURL,
+						user,
+						p.SystemUsers),
+				},
+			}
+			return nil
 		}
-		if param.Name == "BUILDER_IMAGE" && !builderRe.MatchString(param.Value.StringVal) {
+		if param.Name == "BUILDER_IMAGE" {
 			logrus.Debugf("Validating BUILDER_IMAGE")
-			fmt.Printf("builder: %v\n", param.Value.StringVal)
 			logrus.Debugf("Found builder: %v", param.Value.StringVal)
+			logrus.Debugf("builder: %v\n", param.Value.StringVal)
+			if builderRe.MatchString(param.Value.StringVal) {
+				logrus.Debugf("BUILDER_IMAGE: ok")
+				continue
+			}
+			logrus.Debugf("BUILDER_IMAGE: not ok")
 			review.Response = &admissionv1.AdmissionResponse{
 				UID:     review.Request.UID,
 				Allowed: false,
