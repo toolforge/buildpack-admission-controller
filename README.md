@@ -43,18 +43,34 @@ or want to examine things more, use `go test -test.v ./...`
 
 ## Deploying
 
+NOTE: this might change soon, once https://phabricator.wikimedia.org/T291915 is resolved
+
 Since this was designed for use in [Toolforge](https://wikitech.wikimedia.org/wiki/Portal:Toolforge "Toolforge Portal"), so the instructions here focus on that.
 
 The version of docker on the builder host is very old, so the builder/scratch pattern in
 the Dockerfile won't work.
 
-* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud). `root@tools-docker-imagebuilder-01:~# docker build . -f Dockerfile -t docker-registry.tools.wmflabs.org/buildpack-admission:latest`
-* Push the image to the internal repo: `root@tools-docker-imagebuilder-01:~# docker push docker-registry.tools.wmflabs.org/buildpack-admission:latest`
-* The caBundle should be set correctly in a [kustomize](https://kustomize.io/) folder. You should now just be able to run `root@tools-k8s-control-1:# kubectl apply -k deploy/toolforge` to deploy to tools and `root@toolsbeta-test-k8s-control-1:# kubectl apply -k deploy/toolsbeta` to make the deployment work.
+* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud).
+
+	`root@tools-docker-imagebuilder-01:~# docker build . -f Dockerfile -t docker-registry.tools.wmflabs.org/buildpack-admission:latest`
+
+* Push the image to the internal repo:
+
+    `root@tools-docker-imagebuilder-01:~# docker push docker-registry.tools.wmflabs.org/buildpack-admission:latest`
+
+* The caBundle should be set correctly in a [kustomize](https://kustomize.io/) folder. You should now just be able to run:
+
+    `myuser@tools-k8s-control-1:# kubectl --as=admin --as-group=system:master apply -k deploy/toolforge`
+
+  to deploy to tools.
 
 ## Updating the certs
 
 Certificates created with the Kubernetes API are valid for one year. When upgrading Kubernetes (or whenever necessary)
-it is wise to rotate the certs for this service. To do so simply run (as cluster admin or root@control host)
-`root@tools-k8s-control-1:# ./utils/regenerate_certs.sh`. That will recreate the cert secret. Then delete the existing pods to ensure
-that the golang web services are serving the new cert or do a rolling restart: `kubectl rollout restart -n buildpack-admission deployment/buildpack-admission`
+it is wise to rotate the certs for this service. To do so simply run (as cluster admin or root@control host):
+
+`root@tools-k8s-control-1:# ./utils/regenerate_certs.sh`
+
+That will recreate the cert secret. Then delete the existing pods to ensure that the golang web services are serving the new cert or do a rolling restart:
+
+`kubectl rollout restart -n buildpack-admission deployment/buildpack-admission`

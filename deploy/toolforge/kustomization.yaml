@@ -2,12 +2,15 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 bases:
-- ../base
-
+  - ../base
 patchesJson6902:
-- target:
-    group: admissionregistration.k8s.io
-    version: v1
-    kind: ValidatingWebhookConfiguration
-    name: buildpack-admission
-  patch: webhook.patch.yaml 
+  - target:
+      group: admissionregistration.k8s.io
+      version: v1
+      kind: ValidatingWebhookConfiguration
+      name: buildpack-admission
+    path: webhook.patch.yaml 
+images:
+  - name: buildpack-admission
+    newName: docker-registry.tools.wmflabs.org/buildpack-admission
+    newTag: latest
