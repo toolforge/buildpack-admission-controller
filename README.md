@@ -43,6 +43,8 @@ or want to examine things more, use `go test -test.v ./...`
 
 ## Deploying
 
+NOTE: this might change soon, once https://phabricator.wikimedia.org/T291915 is resolved
+
 Since this was designed for use in [Toolforge](https://wikitech.wikimedia.org/wiki/Portal:Toolforge "Toolforge Portal"), so the instructions here focus on that.
 
 The version of docker on the builder host is very old, so the builder/scratch pattern in
