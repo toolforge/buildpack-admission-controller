@@ -48,9 +48,9 @@ Since this was designed for use in [Toolforge](https://wikitech.wikimedia.org/wi
 The version of docker on the builder host is very old, so the builder/scratch pattern in
 the Dockerfile won't work.
 
-* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud). `$ docker build . -f deployments/Dockerfile -t docker-registry.tools.wmflabs.org/buildpack-admission:latest`
+* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud). `root@tools-docker-imagebuilder-01:~# docker build . -f Dockerfile -t docker-registry.tools.wmflabs.org/buildpack-admission:latest`
 * Push the image to the internal repo: `root@tools-docker-imagebuilder-01:~# docker push docker-registry.tools.wmflabs.org/buildpack-admission:latest`
-* The caBundle should be set correctly in a [kustomize](https://kustomize.io/) folder. You should now just be able to run `root@tools-k8s-control-1:# kubectl -k deployments/toolforge` to deploy to tools and `root@toolsbeta-test-k8s-control-1:# kubectl -k deployments/toolsbeta` to make the deployment work.
+* The caBundle should be set correctly in a [kustomize](https://kustomize.io/) folder. You should now just be able to run `root@tools-k8s-control-1:# kubectl apply -k deploy/toolforge` to deploy to tools and `root@toolsbeta-test-k8s-control-1:# kubectl apply -k deploy/toolsbeta` to make the deployment work.
 
 ## Updating the certs
 
