@@ -57,7 +57,8 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 		expectedURL := fmt.Sprintf("^(https?://)?%s/%s/", domstr, user)
 		harborRe := regexp.MustCompile(expectedURL)
 		logrus.Debugf("Found PipeLineRun param: %v", param.Name)
-		if param.Name == "APP_IMAGE" {
+		switch param.Name {
+		case "APP_IMAGE":
 			logrus.Debugf("Validating APP_IMAGE")
 			if acceptedUser || harborRe.MatchString(param.Value.StringVal) {
 				logrus.Debugf("APP_IMAGE: ok")
@@ -78,8 +79,7 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 				},
 			}
 			return nil
-		}
-		if param.Name == "BUILDER_IMAGE" {
+		case "BUILDER_IMAGE":
 			logrus.Debugf("Validating BUILDER_IMAGE")
 			logrus.Debugf("Found builder: %v", param.Value.StringVal)
 			logrus.Debugf("builder: %v\n", param.Value.StringVal)
@@ -92,11 +92,30 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 				UID:     review.Request.UID,
 				Allowed: false,
 				Result: &metav1.Status{
-					Message: fmt.Sprintf("Builder (gotten %s) does not match AllowedBuilders (expected %s).", param.Name, buildstr),
+					Message: fmt.Sprintf("Builder (gotten %s) does not match AllowedBuilders (expected %s).", param.Value.StringVal, buildstr),
 				},
 			}
 			return nil
+		case "SOURCE_URL":
+			// permitted parameter, but not validated
+		case "USER_ID":
+			// permitted parameter, but not validated (TODO: should it?)
+		case "GROUP_ID":
+			// permitted parameter, but not validated (TODO: should it?)
+		default:
+			// Since (at least as of writing this) we use pipelines created by the upstream Tekton
+			// project, we want to ensure that only parameters that we've ensured to be safe can be
+			// used.
+			logrus.Debugf("Pipeline parameter %v is not allowed", param.Name)
 
+			review.Response = &admissionv1.AdmissionResponse{
+				UID:     review.Request.UID,
+				Allowed: false,
+				Result: &metav1.Status{
+					Message: fmt.Sprintf("Pipeline parameter %v cannot be used", param.Name),
+				},
+			}
+			return nil
 		}
 	}
 
