@@ -18,13 +18,31 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func getAdmissionReview(user string, builderImage string, appImage string) admissionv1.AdmissionReview {
+func getAdmissionReview(user string, builderImage string, appImage string, extraParams []map[string]string) admissionv1.AdmissionReview {
 	if appImage == "" {
 		appImage = "harbor.toolsbeta.wmflabs.org/test4/python:snap"
 	}
 	if builderImage == "" {
 		builderImage = "docker-registry.tools.wmflabs.org/toolforge-buster0-builder"
 	}
+
+	params := []map[string]string{
+		{
+			"name":  "BUILDER_IMAGE",
+			"value": builderImage,
+		},
+		{
+			"name":  "APP_IMAGE",
+			"value": appImage,
+		},
+		{
+			"name":  "SOURCE_URL",
+			"value": "https://github.com/earwig/mwparserfromhell",
+		},
+	}
+
+	params = append(params, extraParams...)
+
 	jsonObject := map[string]interface{}{
 		"apiVersion": "tekton.dev/v1beta1",
 		"kind":       "PipelineRun",
@@ -36,20 +54,7 @@ func getAdmissionReview(user string, builderImage string, appImage string) admis
 			"pipelineRef": map[string]string{
 				"name": "buildpacks",
 			},
-			"params": []map[string]string{
-				{
-					"name":  "BUILDER_IMAGE",
-					"value": builderImage,
-				},
-				{
-					"name":  "APP_IMAGE",
-					"value": appImage,
-				},
-				{
-					"name":  "SOURCE_URL",
-					"value": "https://github.com/earwig/mwparserfromhell",
-				},
-			},
+			"params": params,
 		},
 	}
 	if user == "" {
@@ -107,7 +112,7 @@ func TestServeReturnsCorrectJson(t *testing.T) {
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(inc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain)
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -123,7 +128,7 @@ func TestHookFailsOnBadPipelineRun(t *testing.T) {
 		AllowedBuilders: []string{"paketobuildpacks/builder:base", "gcr.io/buildpacks/builder:v1", "docker-registry.tools.wmflabs.org/toolforge-buster0-builder"},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	badAdmissionReview := getAdmissionReview("", "", "")
+	badAdmissionReview := getAdmissionReview("", "", "", []map[string]string{})
 	requestString := string(encodeRequest(&badAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -144,7 +149,7 @@ func TestHookDoesNotAllowBadUserBadDomain(t *testing.T) {
 		SystemUsers:     []string{"gooduser"},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	badAdmissionReview := getAdmissionReview(badUser, goodBuilder, badDomain)
+	badAdmissionReview := getAdmissionReview(badUser, goodBuilder, badDomain, []map[string]string{})
 	requestString := string(encodeRequest(&badAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -165,7 +170,7 @@ func TestHookAllowsGoodUserBadDomain(t *testing.T) {
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, badDomain)
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, badDomain, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -185,7 +190,7 @@ func TestHookAllowsGoodUserGoodDomain(t *testing.T) {
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain)
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -206,7 +211,7 @@ func TestHookAllowsGoodUserGoodDomainWithHTTPProtocol(t *testing.T) {
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain)
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -227,7 +232,7 @@ func TestHookAllowsGoodUserGoodDomainWithHTTPSProtocol(t *testing.T) {
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain)
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -235,5 +240,35 @@ func TestHookAllowsGoodUserGoodDomainWithHTTPSProtocol(t *testing.T) {
 	t.Log(review.Response)
 	if !review.Response.Allowed {
 		t.Error("Failed to allow pipelinerun should have been allowed!")
+	}
+}
+
+func TestHookDoesNotAllowUnvettedParameters(t *testing.T) {
+	goodUser := "gooduser"
+	goodDomain := "gooddomain"
+	goodBuilder := "https://good/builder:v1"
+	nsc := &PipelineRunAdmission{
+		AllowedDomains:  []string{goodDomain},
+		AllowedBuilders: []string{goodBuilder},
+		SystemUsers:     []string{goodUser},
+	}
+	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
+	badAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{
+		{
+			"name":  "INVALID_PARAM",
+			"value": "not valid",
+		},
+	})
+	requestString := string(encodeRequest(&badAdmissionReview))
+	myr := strings.NewReader(requestString)
+	r, _ := http.Post(server.URL, "application/json", myr)
+	review := decodeResponse(r.Body)
+	t.Log(review.Response)
+	if review.Response.Allowed {
+		t.Error("Allowed pipelinerun that should not have been allowed!")
+	}
+
+	if review.Response.Result.Message != "Pipeline parameter INVALID_PARAM cannot be used" {
+		t.Error("Got unexpected error message:", review.Response.Result.Message)
 	}
 }
