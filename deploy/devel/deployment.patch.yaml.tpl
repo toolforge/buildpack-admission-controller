@@ -5,9 +5,12 @@
   value: Never
 - op: replace
   path: /spec/template/spec/containers/0/env/1/value
-  # This patches the ALLOWEDDOMAINS env variable to allow connections to all the hostnames and IPs currently used in dev environments.
-  # TODO: make this more generic (switching to Helm might help)
-  value: host.minikube.internal,192.168.49.1,192.168.1.111
+  # this resolves to the ip of the host running minikube
+  value: host.minikube.internal,192.168.49.1
+# Enable debugging
 - op: replace
   path: /spec/template/spec/containers/0/env/0/value
   value: "true"
+- op: replace
+  path: /spec/template/spec/containers/0/env/3/value
+  value: "@@BUILD_ID@@-dev"
