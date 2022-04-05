@@ -1,3 +1,5 @@
 *.o
 .vscode
-deployments/dev/webhook.patch.yaml
+deploy/devel/deployment.patch.yaml
+deploy/devel/webhook.patch.yaml
+deploy/base/deployment.yaml

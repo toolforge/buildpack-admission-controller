@@ -27,6 +27,8 @@ spec:
               value: "harbor.toolforge.org,harbor.toolsbeta.wmflabs.org"
             - name: "SYSTEMUSERS"
               value: "system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"
+            - name: "BUILDID"
+              value: "@@BUILD_ID@@"
           resources:
             limits:
               memory: 50Mi
