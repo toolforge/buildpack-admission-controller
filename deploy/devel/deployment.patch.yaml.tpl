@@ -13,4 +13,4 @@
   value: "true"
 - op: replace
   path: /spec/template/spec/containers/0/env/3/value
-  value: "18282bf9728cca6ad2c5f0d1d76d593fe80e68ff-20220406_120210-dev"
+  value: "@@BUILD_ID@@-dev"

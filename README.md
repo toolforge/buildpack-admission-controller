@@ -26,7 +26,7 @@ To build on minikube and launch, follow these steps, from the root of the repo:
 That creates the image on minikube's docker daemon. Then to launch the service:
 
 * `./utils/regenerate_certs.sh`  <-- creates a new certificate, a CSR to sign it, and a k8s secret with the signed cert and key
-* `./utils/realize_patch.sh deploy/devel/webhook.patch.yaml.tpl` <-- generates the patch to override the ca bundle with the k8s secret we just created
+* `./utils/realize_patch.sh` <-- generates the patch to override the ca bundle with the k8s secret we just created, and others
 * `kubectl apply -k deploy/devel` <-- Deploys the dev environment
 
 If everything goes well, you should see the new `buildpack-admission` namespace with a couple pods running:

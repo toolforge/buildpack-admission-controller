@@ -28,7 +28,7 @@ spec:
             - name: "SYSTEMUSERS"
               value: "system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"
             - name: "BUILDID"
-              value: "18282bf9728cca6ad2c5f0d1d76d593fe80e68ff-20220406_120211"
+              value: "@@BUILD_ID@@"
           resources:
             limits:
               memory: 50Mi
