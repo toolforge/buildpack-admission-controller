@@ -27,7 +27,7 @@ function main() {
     fi
 
     sed "s/@@CA_BUNDLE@@/${CA_BUNDLE}/g" "${template_path}" > "${template_path%.tpl}"
-    echo "Realized tmplate ${template_path} into ${template_path%.tpl}."
+    echo "Realized template ${template_path} into ${template_path%.tpl}."
 }
 
 

@@ -18,30 +18,19 @@ these external go libraries:
 	* k8s.io/api
 	* k8s.io/apimachinery
 
-To build on minikube and launch, follow these steps, from the root of the repo:
-
-* `eval $(minikube docker-env)`
-* `docker build -t buildpack-admission:latest .`
-
-That creates the image on minikube's docker daemon. Then to launch the service:
-
-* `./utils/regenerate_certs.sh`  <-- creates a new certificate, a CSR to sign it, and a k8s secret with the signed cert and key
-* `./utils/realize_patch.sh deploy/devel/webhook.patch.yaml.tpl` <-- generates the patch to override the ca bundle with the k8s secret we just created
-* `kubectl apply -k deploy/devel` <-- Deploys the dev environment
-
-If everything goes well, you should see the new `buildpack-admission` namespace with a couple pods running:
-* `kubectl get all -n buildpack-admission`
+To build on minikube (current supported k8s version is 1.21) and launch, just run:
+* `deploy.sh -b devel`
 
 As long as a suitable image can be placed where needed on toolforge, which can be done locally if
 node affinity is used or some similar mechanism to prevent it being needed on every
-spun-up node, the last three steps are likely all that is needed to bootstrap.
+spun-up node, the command above is likely all that is needed to bootstrap.
 
 ## Testing
 
 At the top level, run `go test ./...` to capture all tests.  If you need to see output
 or want to examine things more, use `go test -test.v ./...`
 
-## Deploying
+## Deploying To Production
 
 NOTE: this might change soon, once https://phabricator.wikimedia.org/T291915 is resolved
 
@@ -50,27 +39,27 @@ Since this was designed for use in [Toolforge](https://wikitech.wikimedia.org/wi
 The version of docker on the builder host is very old, so the builder/scratch pattern in
 the Dockerfile won't work.
 
-* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud).
+* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud) 
+and push image to the internal repo:
 
-	`root@tools-docker-imagebuilder-01:~# docker build . -f Dockerfile -t docker-registry.tools.wmflabs.org/buildpack-admission:latest`
+  with a checkout of the repo somewhere in the docker image builder host (in a home directory is probably great), run:
 
-* Push the image to the internal repo:
+    `root@tools-docker-imagebuilder-01:# deploy -b <tools or toolsbeta>`
+  The command above builds the image on the image builder host and pushes it to the internal docker registry.
 
-    `root@tools-docker-imagebuilder-01:~# docker push docker-registry.tools.wmflabs.org/buildpack-admission:latest`
+* The caBundle should be set correctly in a [kustomize](https://kustomize.io/) folder. You should now just be able to run the command below on the k8s control node as root (or as a cluster-admin user), with a checkout of the repo there somewhere (in a home directory is probably great):
 
-* The caBundle should be set correctly in a [kustomize](https://kustomize.io/) folder. You should now just be able to run:
+    `myuser@tools-k8s-control-1:# deploy <tools or toolsbeta>`
 
-    `myuser@tools-k8s-control-1:# kubectl --as=admin --as-group=system:master apply -k deploy/toolforge`
-
-  to deploy to tools.
+  to deploy to toolforge or toolsbeta.
 
 ## Updating the certs
 
 Certificates created with the Kubernetes API are valid for one year. When upgrading Kubernetes (or whenever necessary)
-it is wise to rotate the certs for this service. To do so simply run (as cluster admin or root@control host):
+it is wise to rotate the certs for this service. To do so simply run (as cluster admin or root@control host), with a checkout of the repo there somewhere:
 
-`root@tools-k8s-control-1:# ./utils/regenerate_certs.sh`
+`root@tools-k8s-control-1:# deploy -c <tools or toolsbeta>`
 
-That will recreate the cert secret. Then delete the existing pods to ensure that the golang web services are serving the new cert or do a rolling restart:
-
-`kubectl rollout restart -n buildpack-admission deployment/buildpack-admission`
+Or any time by simply running (as cluster admin or root@control host)
+`root@tools-k8s-control-1:# ./utils/regenerate_certs.sh`. That will recreate the cert secret. Then delete the existing pods to ensure
+that the golang web services are serving the new cert.
