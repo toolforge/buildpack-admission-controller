@@ -1,4 +1,4 @@
-FROM golang:1.16-buster as builder
+FROM golang:1.19-bullseye as builder
 
 RUN apt-get update && apt-get install git && apt-get install ca-certificates
 
