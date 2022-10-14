@@ -23,7 +23,7 @@ func getAdmissionReview(user string, builderImage string, appImage string, extra
 		appImage = "harbor.toolsbeta.wmflabs.org/test4/python:snap"
 	}
 	if builderImage == "" {
-		builderImage = "docker-registry.tools.wmflabs.org/toolforge-buster0-builder"
+		builderImage = "docker-registry.tools.wmflabs.org/toolforge-bullseye0-builder"
 	}
 
 	params := []map[string]string{
@@ -125,7 +125,7 @@ func TestServeReturnsCorrectJson(t *testing.T) {
 func TestHookFailsOnBadPipelineRun(t *testing.T) {
 	nsc := &PipelineRunAdmission{
 		AllowedDomains:  []string{"harbor.toolforge.org", "harbor.toolsbeta.wmflabs.org"},
-		AllowedBuilders: []string{"paketobuildpacks/builder:base", "gcr.io/buildpacks/builder:v1", "docker-registry.tools.wmflabs.org/toolforge-buster0-builder"},
+		AllowedBuilders: []string{"paketobuildpacks/builder:base", "gcr.io/buildpacks/builder:v1", "docker-registry.tools.wmflabs.org/toolforge-bullseye0-builder"},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
 	badAdmissionReview := getAdmissionReview("", "", "", []map[string]string{})
