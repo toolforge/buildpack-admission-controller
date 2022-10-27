@@ -13,4 +13,4 @@ patchesJson6902:
 images:
   - name: buildpack-admission
     newName: docker-registry.tools.wmflabs.org/buildpack-admission
-    newTag: latest
+    newTag: 8fe5685
