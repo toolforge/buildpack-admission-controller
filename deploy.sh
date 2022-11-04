@@ -34,6 +34,8 @@ build_image() {
     # build container image for dev or prod environments
 
     local environment="${1?No environment passed}"
+    local git_hash="$(git rev-parse --short HEAD)"
+    local timestamp="$(date +%Y%m%d%H%M%S)"
 
     if [[ "$environment" == "devel" ]]
     then
@@ -42,9 +44,9 @@ build_image() {
         docker build -t buildpack-admission:latest .
     else
         # Build the container image on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud).
-        docker build . -f Dockerfile -t docker-registry.tools.wmflabs.org/buildpack-admission:latest
+        docker build . -f Dockerfile -t "docker-registry.tools.wmflabs.org/buildpack-admission:${timestamp}_${git_hash}"
         # Push the image to the internal repo
-        docker push docker-registry.tools.wmflabs.org/buildpack-admission:latest
+        docker push "docker-registry.tools.wmflabs.org/buildpack-admission:${timestamp}_${git_hash}"
         echo "Successfully built container image for tools/toolsbeta environments with exit code 0. \
         To deploy,log into k8s control node with repository checked out and run './deploy.sh (tools or toolsbeta)'"
     fi
