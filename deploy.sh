@@ -67,10 +67,10 @@ deploy_generic() {
     local environment="${1?No environment passed}"
     local refresh_certs="${2?No refresh_certs argument passed}"
 
+    ./utils/realize_patch.sh
     if [[ "$environment" == "devel" ]]
     then
         # generate the patch to override the ca bundle with the k8s secret we just created
-        ./utils/realize_patch.sh deploy/devel/webhook.patch.yaml.tpl
         # Deploy the dev environment
         kubectl apply -k deploy/devel
     else
