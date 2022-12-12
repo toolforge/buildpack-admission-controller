@@ -17,6 +17,11 @@ function main() {
 function realize_template() {
     local template_path="${1?No template_path passed}"
 
+    if [[ -z $DEV_DOMAIN_IP ]]; then
+        echo "DEV_DOMAIN_IP is undefined"
+        exit 1
+    fi
+
     if [[ $OSTYPE =~ darwin ]]; then
         # For MacOS
         CA_BUNDLE=$(
@@ -32,10 +37,11 @@ function realize_template() {
         )
     fi
 
-    local git_hash="$(git rev-parse HEAD)"
+    local GIT_HASH="$(git rev-parse HEAD)"
     sed \
         -e "s/@@CA_BUNDLE@@/${CA_BUNDLE}/g" \
-        -e "s/@@BUILD_ID@@/${git_hash}-$(date +%Y%m%d_%H%M%S)/g" \
+        -e "s/@@BUILD_ID@@/${GIT_HASH}-$(date +%Y%m%d_%H%M%S)/g" \
+        -e "s/@@DEV_DOMAIN_IP@@/${DEV_DOMAIN_IP}/g" \
         "${template_path}" \
     > "${template_path%.tpl}"
     echo "Realized template ${template_path} into ${template_path%.tpl}"

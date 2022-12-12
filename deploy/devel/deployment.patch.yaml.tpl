@@ -6,7 +6,10 @@
 - op: replace
   path: /spec/template/spec/containers/0/env/1/value
   # this resolves to the ip of the host running minikube
-  value: host.minikube.internal,192.168.49.1
+  value: host.minikube.internal,@@DEV_DOMAIN_IP@@
+- op: add
+  path: /spec/template/spec/containers/0/env/2/value
+  value: minikube-user
 # Enable debugging
 - op: replace
   path: /spec/template/spec/containers/0/env/0/value
