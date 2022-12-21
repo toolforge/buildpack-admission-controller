@@ -102,6 +102,8 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 			// permitted parameter, but not validated (TODO: should it?)
 		case "GROUP_ID":
 			// permitted parameter, but not validated (TODO: should it?)
+		case "SOURCE_REFERENCE":
+			// permitted parameter, but not validated (TODO: should it?)
 		default:
 			// Since (at least as of writing this) we use pipelines created by the upstream Tekton
 			// project, we want to ensure that only parameters that we've ensured to be safe can be
