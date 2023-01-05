@@ -1,6 +1,9 @@
-#!/bin/bash -eu
-
+#!/bin/bash
+set -o errexit
+set -o nounset
 set -o pipefail
+
+
 function main() {
     if [[ ${1:-} == '-v' ]]; then
         shift
@@ -16,11 +19,7 @@ function main() {
 
 function realize_template() {
     local template_path="${1?No template_path passed}"
-
-    if [[ -z $DEV_DOMAIN_IP ]]; then
-        echo "DEV_DOMAIN_IP is undefined"
-        exit 1
-    fi
+    local GIT_HASH
 
     if [[ $OSTYPE =~ darwin ]]; then
         # For MacOS
@@ -37,7 +36,7 @@ function realize_template() {
         )
     fi
 
-    local GIT_HASH="$(git rev-parse HEAD)"
+    GIT_HASH="$(git rev-parse HEAD)"
     sed \
         -e "s/@@CA_BUNDLE@@/${CA_BUNDLE}/g" \
         -e "s/@@BUILD_ID@@/${GIT_HASH}-$(date +%Y%m%d_%H%M%S)/g" \
