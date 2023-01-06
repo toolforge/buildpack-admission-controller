@@ -123,6 +123,10 @@ main () {
 
     if [[ "$environment" == "devel" ]];then
         refresh_certs="yes"
+        # fail early as this is required for devel
+        DEV_DOMAIN_IP="${DEV_DOMAIN_IP?No DEV_DOMAIN_IP passed, please provide one}"
+    else
+        export DEV_DOMAIN_IP="not needed for non-devel envs, will be ignored, just needs setting"
     fi
 
     if [[ "$do_build" == "yes" ]];then
