@@ -38,6 +38,13 @@ As long as a suitable image can be placed where needed on toolforge, which can b
 node affinity is used or some similar mechanism to prevent it being needed on every
 spun-up node, the command above is likely all that is needed to bootstrap.
 
+**Making changes**
+Before you make a change, you need setup pre-commit on your local machine.
+
+* run `pip3 install pre-commit` on your local machine (`brew install pre-commit` if using homebrew)
+* run `pre-commit install` to setup the git hook scripts.
+
+After the above steps, you can go ahead and make changes, commit and push.
 ## Testing
 
 At the top level, run `go test ./...` to capture all tests.  If you need to see output
@@ -52,7 +59,7 @@ Since this was designed for use in [Toolforge](https://wikitech.wikimedia.org/wi
 The version of docker on the builder host is very old, so the builder/scratch pattern in
 the Dockerfile won't work.
 
-* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud) 
+* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud)
 and push image to the internal repo:
 
   with a checkout of the repo somewhere in the docker image builder host (in a home directory is probably great), run:
