@@ -21,10 +21,12 @@ EOH
 
 check_environment() {
     # verify that the proper environment is passed
+    local environment="${1?No environment passed}"
 
     if [[ ! -d "deploy/$environment" || "$environment" =~ ^(base)$ ]]; then
         echo "Unknown environment $environment, use one of:"
-        ls deploy/ | egrep -v '^(base)'
+        # shellcheck disable=SC2010
+        ls deploy/ | grep -vE '^(base)'
         exit 1
     fi
 }
@@ -33,14 +35,16 @@ check_environment() {
 build_image() {
     # build container image for dev or prod environments
 
+    local git_hash
+    local timestamp
     local environment="${1?No environment passed}"
-    local git_hash="$(git rev-parse --short HEAD)"
-    local timestamp="$(date +%Y%m%d%H%M%S)"
+    git_hash="$(git rev-parse --short HEAD)"
+    timestamp="$(date +%Y%m%d%H%M%S)"
 
     if [[ "$environment" == "devel" ]]
     then
         # creates the image on minikube's docker daemon
-        eval $(minikube docker-env)
+        eval "$(minikube docker-env)"
         docker build -t buildpack-admission:latest .
     else
         # Build the container image on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud).
