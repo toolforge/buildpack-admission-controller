@@ -9,7 +9,7 @@ patchesJson6902:
       version: v1
       kind: ValidatingWebhookConfiguration
       name: buildpack-admission
-    path: webhook.patch.yaml 
+    path: webhook.patch.yaml
 images:
   - name: buildpack-admission
     newName: docker-registry.tools.wmflabs.org/buildpack-admission

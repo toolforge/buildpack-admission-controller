@@ -39,7 +39,10 @@ func (acs *AdmissionControllerServer) ServeHTTP(w http.ResponseWriter, r *http.R
 	if err != nil {
 		logrus.Errorln("Can't decode request", err)
 	}
-	acs.AdmissionController.HandleAdmission(review)
+	err = acs.AdmissionController.HandleAdmission(review)
+	if err != nil {
+		logrus.Errorln(err)
+	}
 	responseInBytes, err := json.Marshal(review)
 	if err != nil {
 		logrus.Errorln("Can't decode review", err)
@@ -63,7 +66,7 @@ func GetAdmissionServerNoSSL(ac AdmissionController, listenOn string) *http.Serv
 	return server
 }
 
-//GetAdmissionValidationServer is a constructor for producing a working TLS-enabled webhook
+// GetAdmissionValidationServer is a constructor for producing a working TLS-enabled webhook
 func GetAdmissionValidationServer(ac AdmissionController, tlsCert, tlsKey, listenOn string) *http.Server {
 	sCert, err := tls.LoadX509KeyPair(tlsCert, tlsKey)
 	server := GetAdmissionServerNoSSL(ac, listenOn)

@@ -20,14 +20,21 @@ type Config struct {
 
 func main() {
 	config := &Config{}
-	envconfig.Process("", config)
+	err := envconfig.Process("", config)
 
 	if config.Debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	if err != nil {
+		logrus.Errorln(err)
+	}
+
 	logrus.Infoln(config)
 	prac := server.PipelineRunAdmission{AllowedDomains: config.AllowedDomains, AllowedBuilders: config.AllowedBuilders, SystemUsers: config.SystemUsers}
 	s := server.GetAdmissionValidationServer(&prac, config.TLSCert, config.TLSKey, config.ListenOn)
-	s.ListenAndServeTLS("", "")
+	err = s.ListenAndServeTLS("", "")
+	if err != nil {
+		logrus.Errorln(err)
+	}
 }

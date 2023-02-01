@@ -9,7 +9,7 @@ function main() {
         shift
         set -x
     fi
-
+    # shellcheck disable=SC2044
     for template in $(find . -iname \*.tpl); do
         realize_template "$template"
     done
