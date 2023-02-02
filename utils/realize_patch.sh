@@ -9,7 +9,8 @@ function main() {
         shift
         set -x
     fi
-
+    # For loops over find output are fragile - we never are going to have enough templates
+    # shellcheck disable=SC2044
     for template in $(find . -iname \*.tpl); do
         realize_template "$template"
     done

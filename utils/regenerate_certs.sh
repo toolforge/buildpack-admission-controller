@@ -58,7 +58,7 @@ function create_k8s_csr() {
     local total_tries=30
     local retry_num
     # clean-up any previously created CSR for our service. Ignore errors if not present.
-    kubectl delete csr ${csr_name} 2>/dev/null || true
+    kubectl delete csr "${csr_name}" 2>/dev/null || true
 
     # create  server cert/key CSR and  send to k8s API
     cat <<EOF | kubectl create -f -
@@ -70,7 +70,7 @@ spec:
     signerName: kubernetes.io/kubelet-serving
     groups:
         - system:authenticated
-    request: $(cat ${server_csr_path} | base64 | tr -d '\n')
+    request: $(< "${server_csr_path}" base64 | tr -d '\n')
     usages:
         - digital signature
         - key encipherment
@@ -140,9 +140,10 @@ function upload_signed_crts_to_k8s() {
 
 
 function main() {
-    local tmpdir=$(mktemp -d)
+    local tmpdir
     local app_name="buildpack-admission"
     local csr_name=${app_name}.${app_name}
+    tmpdir=$(mktemp -d)
 
     if [[ ${1:-} == '-h' ]]; then
         help
