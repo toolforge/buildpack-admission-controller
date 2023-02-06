@@ -90,7 +90,7 @@ func getAdmissionReview(user string, builderImage string, appImage string, extra
 func decodeResponse(body io.ReadCloser) *admissionv1.AdmissionReview {
 	response, _ := ioutil.ReadAll(body)
 	review := &admissionv1.AdmissionReview{}
-	codecs.UniversalDeserializer().Decode(response, nil, review)
+	_, _, _ = codecs.UniversalDeserializer().Decode(response, nil, review)
 	return review
 }
 
