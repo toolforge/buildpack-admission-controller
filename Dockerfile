@@ -1,15 +1,20 @@
-FROM golang:1.19-bullseye as builder
+FROM docker-registry.wikimedia.org/golang1.19:latest as builder
 
-RUN apt-get update && apt-get install git && apt-get install ca-certificates
+WORKDIR /src
 
-WORKDIR /validation-admission-controllers-go
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/validation-admission-controllers-go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -a -installsuffix cgo -ldflags="-w -s" -o /tmp/buildpack-admission
 
 # Runtime image
 FROM scratch AS base
+
+# TODO: what are the ca certs needed for?
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /go/bin/validation-admission-controllers-go /bin/validation-admission-controllers-go
-ENTRYPOINT ["/bin/validation-admission-controllers-go"]
+COPY --from=builder /tmp/buildpack-admission /bin/buildpack-admission
+ENTRYPOINT ["/bin/buildpack-admission"]
