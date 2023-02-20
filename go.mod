@@ -1,4 +1,4 @@
-module gerrit.wikimedia.org/cloud/tools/buildpack-admission-webhook
+module github.com/toolforge/buildpack-admission-controller
 
 go 1.19
 
