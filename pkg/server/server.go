@@ -74,7 +74,7 @@ func GetAdmissionValidationServer(ac AdmissionController, tlsCert, tlsKey, liste
 		Certificates: []tls.Certificate{sCert},
 	}
 	if err != nil {
-		logrus.Error(err)
+		logrus.Fatalln(err)
 	}
 	return server
 }
