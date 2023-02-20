@@ -1,0 +1,15 @@
+releases:
+  - name: buildpack-admission
+    chart: ./chart/
+
+    namespace: buildpack-admission
+    createNamespace: true
+
+    values:
+      - ./values/{{ .Environment.Name }}.yaml
+
+# Specify an environment for each project.
+environments:
+  tools: {}
+  toolsbeta: {}
+  local: {}

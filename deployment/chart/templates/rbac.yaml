@@ -1,5 +1,5 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
   name: buildpack-admission-psp
 roleRef:
@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: buildpack-admission
+  namespace: {{ .Release.Namespace }}

@@ -16,7 +16,6 @@ type Config struct {
 	SystemUsers     []string `default:"system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"`
 	AllowedBuilders []string `default:"paketobuildpacks/builder:base,gcr.io/buildpacks/builder:v1,docker-registry.tools.wmflabs.org/toolforge-bullseye0-builder:latest"`
 	Debug           bool     `default:"true"`
-	BuildID         string   `default:"nobuildid"`
 }
 
 func main() {

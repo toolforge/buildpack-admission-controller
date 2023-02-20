@@ -1,0 +1,29 @@
+replicas: 2
+
+image:
+  name: docker-registry.tools.wmflabs.org/buildpack-admission
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    memory: 50Mi
+    cpu: 300m
+  requests:
+    memory: 50Mi
+    cpu: 300m
+
+webhook:
+  caBundle: ""
+  failurePolicy: Fail
+  secretName: buildpack-admission-certs
+
+config:
+  debug: false
+
+  harborDomains:
+    - harbor.toolforge.org
+    - harbor.toolsbeta.wmflabs.org
+  
+  systemUsers:
+    - "system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"
