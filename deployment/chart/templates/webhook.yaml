@@ -2,10 +2,12 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: buildpack-admission
+  annotations:
+    cert-manager.io/inject-ca-from: "{{ .Release.Namespace }}/{{ .Values.webhook.secretName }}"
 webhooks:
   - name: buildpack-admission.tools.wmcloud.org
     clientConfig:
-      caBundle: {{ .Values.webhook.caBundle }}
+      caBundle: ""  # injected by cert-manager
       service:
         name: buildpack-admission
         namespace: {{ .Release.Namespace }}

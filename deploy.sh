@@ -14,13 +14,9 @@ if [ -z "$DEPLOY_ENVIRONMENT" ]; then
 	DEPLOY_ENVIRONMENT="$PROJECT"
 fi
 
-kubectl create namespace buildpack-admission --dry-run=client -o yaml | kubectl apply -f -
-
 if [ "$DEPLOY_ENVIRONMENT" = "local" ]; then
 	DEV_DOMAIN_IP="${DEV_DOMAIN_IP}" ./deployment/utils/local-values.sh
 fi
-
-./deployment/utils/regenerate-certs.sh
 
 # use -i (interactive) to ask for confirmation for changing
 # live cluster state if stdin is a tty
