@@ -28,8 +28,7 @@ func main() {
 	}
 
 	if err != nil {
-		logrus.Errorln(err)
-		logrus.Exit(1)
+		logrus.Fatalln(err)
 	}
 
 	logrus.Infoln(config)
@@ -37,7 +36,6 @@ func main() {
 	s := server.GetAdmissionValidationServer(&prac, config.TLSCert, config.TLSKey, config.ListenOn)
 	err = s.ListenAndServeTLS("", "")
 	if err != nil {
-		logrus.Errorln(err)
-		logrus.Exit(1)
+		logrus.Fatalln(err)
 	}
 }
