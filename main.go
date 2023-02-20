@@ -1,9 +1,10 @@
 package main
 
 import (
-	"gerrit.wikimedia.org/cloud/tools/buildpack-admission-webhook/pkg/server"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sirupsen/logrus"
+
+	"github.com/toolforge/buildpack-admission-controller/pkg/server"
 )
 
 // Config is the general configuration of the webhook via env variables
