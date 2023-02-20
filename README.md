@@ -9,15 +9,6 @@ This is pending adaption to Toolforge.  Currently it depends on local docker ima
 can be built and deployed on Kubernetes by ensuring any node it is expected to run on
 has access to the image it uses.  The image will need to be in a registry most likely when deployed.
 
-It was developed using [Go Modules](https://github.com/golang/go/wiki/Modules), which will
-validate the hash of every imported library during build.  At this time, it depends on
-these external go libraries:
-
-	* github.com/kelseyhightower/envconfig
-	* github.com/sirupsen/logrus
-	* k8s.io/api
-	* k8s.io/apimachinery
-
 **Export your local repository ip**
 
 The IP to use will vary depending on your machine and OS,
@@ -32,11 +23,15 @@ But sometimes (ex. debian bullseye) you will need to use the external IP of your
 **Build on minikube**
 
 To build on minikube (current supported k8s version is 1.21) and launch, just run:
-* `./deploy.sh -b devel`
+  * (Launch a cluster if you have not already done so.)
+  * `eval $(minikube docker-env)`
+  * `docker build -f Dockerfile -t buildpack-admission:latest .`
+  * `./deploy.sh local`
 
-As long as a suitable image can be placed where needed on toolforge, which can be done locally if
-node affinity is used or some similar mechanism to prevent it being needed on every
-spun-up node, the command above is likely all that is needed to bootstrap.
+After you've made changes, update the image and restart the running container:
+  * `eval $(minikube docker-env)` (if you did not already do this in the current session)
+  * `docker build -f Dockerfile -t buildpack-admission:latest .`
+  * `kubectl rollout restart -n buildpack-admission deployment buildpack-admission`
 
 **Making changes**
 Before you make a change, you need setup pre-commit on your local machine.
