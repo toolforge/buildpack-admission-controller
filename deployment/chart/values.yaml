@@ -14,7 +14,6 @@ resources:
     cpu: 300m
 
 webhook:
-  caBundle: ""
   failurePolicy: Fail
   secretName: buildpack-admission-certs
 

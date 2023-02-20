@@ -10,8 +10,8 @@ import (
 // Config is the general configuration of the webhook via env variables
 type Config struct {
 	ListenOn        string   `default:"0.0.0.0:8080"`
-	TLSCert         string   `default:"/etc/webhook/certs/cert.pem"`
-	TLSKey          string   `default:"/etc/webhook/certs/key.pem"`
+	TLSCert         string   `default:"/etc/webhook/certs/tls.crt"`
+	TLSKey          string   `default:"/etc/webhook/certs/tls.key"`
 	AllowedDomains  []string `default:"harbor.toolforge.org,harbor.toolsbeta.wmflabs.org"`
 	SystemUsers     []string `default:"system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"`
 	AllowedBuilders []string `default:"paketobuildpacks/builder:base,gcr.io/buildpacks/builder:v1,docker-registry.tools.wmflabs.org/toolforge-bullseye0-builder:latest"`
