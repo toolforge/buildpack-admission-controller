@@ -3,11 +3,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: buildpack-admission
-  namespace: buildpack-admission
   labels:
     name: buildpack-admission
 spec:
-  replicas: 2
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       name: buildpack-admission
@@ -19,23 +18,16 @@ spec:
     spec:
       containers:
         - name: webhook
-          image: buildpack-admission
+          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: "DEBUG"
-              value: "false"
+              value: "{{ .Values.config.debug }}"
             - name: "ALLOWEDDOMAINS"
-              value: "harbor.toolforge.org,harbor.toolsbeta.wmflabs.org"
+              value: "{{ .Values.config.harborDomains | join ", " }}"
             - name: "SYSTEMUSERS"
-              value: "system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"
-            - name: "BUILDID"
-              value: "@@BUILD_ID@@"
-          resources:
-            limits:
-              memory: 50Mi
-              cpu: 300m
-            requests:
-              memory: 50Mi
-              cpu: 300m
+              value: "{{ .Values.config.systemusers | join ", " }}"
+          resources: {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: webhook-certs
               mountPath: /etc/webhook/certs
@@ -45,4 +37,4 @@ spec:
       volumes:
         - name: webhook-certs
           secret:
-            secretName: buildpack-admission-certs
+            secretName: {{ .Values.webhook.secretName }}

@@ -3,19 +3,19 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: buildpack-admission
 webhooks:
-  - name: buildpack-admission.buildpack-admission.svc.tools.local
+  - name: buildpack-admission.tools.wmcloud.org
     clientConfig:
-      caBundle: PLACEHOLDER=
+      caBundle: {{ .Values.webhook.caBundle }}
       service:
         name: buildpack-admission
-        namespace: buildpack-admission
+        namespace: {{ .Release.Namespace }}
         path: "/"
     rules:
       - operations: ["CREATE","UPDATE"]
         apiGroups: ["tekton.dev"]
         apiVersions: ["v1beta1"]
         resources: ["pipelineruns"]
-    failurePolicy: Fail
+    failurePolicy: {{ .Values.webhook.failurePolicy }}
     sideEffects: None
-    admissionReviewVersions: ["v1", "v1beta1"]
+    admissionReviewVersions: ["v1"]
     matchPolicy: Equivalent
