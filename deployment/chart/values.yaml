@@ -23,6 +23,6 @@ config:
   harborDomains:
     - harbor.toolforge.org
     - harbor.toolsbeta.wmflabs.org
-  
+
   systemUsers:
     - "system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"

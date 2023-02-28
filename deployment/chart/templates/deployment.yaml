@@ -26,9 +26,9 @@ spec:
             - name: "DEBUG"
               value: "{{ .Values.config.debug }}"
             - name: "ALLOWEDDOMAINS"
-              value: "{{ .Values.config.harborDomains | join ", " }}"
+              value: "{{ .Values.config.harborDomains | join "," }}"
             - name: "SYSTEMUSERS"
-              value: "{{ .Values.config.systemusers | join ", " }}"
+              value: "{{ .Values.config.systemusers | join "," }}"
           resources: {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: webhook-certs
