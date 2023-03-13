@@ -1,2 +1,7 @@
 image:
   tag: f90bd8f
+
+config:
+  # see https://wikitech.wikimedia.org/wiki/Wikimedia_Cloud_Services_team/EnhancementProposals/Decision_record_T330102_What_buildpacks_to_allow_and_include_for_toolforge_build_service_beta
+  builders:
+    - toolsbeta-harbor.wmcloud.org/toolforge/heroku-builder-classic:22

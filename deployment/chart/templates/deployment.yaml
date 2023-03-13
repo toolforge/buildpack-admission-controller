@@ -27,6 +27,8 @@ spec:
               value: "{{ .Values.config.debug }}"
             - name: "ALLOWEDDOMAINS"
               value: "{{ .Values.config.harborDomains | join "," }}"
+            - name: "ALLOWEDBUILDERS"
+              value: "{{ .Values.config.builders | join "," }}"
             - name: "SYSTEMUSERS"
               value: "{{ .Values.config.systemusers | join "," }}"
           resources: {{- toYaml .Values.resources | nindent 12 }}
