@@ -47,21 +47,40 @@ or want to examine things more, use `go test -test.v ./...`
 
 ## Deploying To Production
 
-NOTE: this might change soon, once https://phabricator.wikimedia.org/T291915 is resolved
+When deploying you have to take into account two things:
 
-Since this was designed for use in [Toolforge](https://wikitech.wikimedia.org/wiki/Portal:Toolforge "Toolforge Portal"), so the instructions here focus on that.
+* The code of the controller (any `*.go` files)
+* The code and config for the deployment (the files under `deployment/*`) -> you only need to run the deploy
 
-The version of docker on the builder host is very old, so the builder/scratch pattern in
-the Dockerfile won't work.
+### If you changed any controller code (usually `*.go` file)
 
-* Build the container on the docker-builder host (currently tools-docker-imagebuilder-01.tools.eqiad1.wikimedia.cloud)
-and push image to the internal repo:
+You will have to build a new docker image, and send a new commit updating the deploy code to use the new image tag.
 
-  with a checkout of the repo somewhere in the docker image builder host (in a home directory is probably great), run:
+To build the image you can use the [cookbook](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Admin/Kubernetes/Components#Build):
 
-    `root@tools-docker-imagebuilder-01:# ./deploy.sh -b <tools or toolsbeta>`
-  The command above builds the image on the image builder host and pushes it to the internal docker registry.
+> cookbook wmcs.toolforge.k8s.component.build --git-url https://github.com/toolforge/buildpack-admission-controller
 
-    `myuser@tools-k8s-control-1:# ./deploy.sh <tools or toolsbeta>`
 
-  to deploy to toolforge or toolsbeta.
+That will give you an image tag:
+```
+dcaro@vulcanus$ cookbook wmcs.toolforge.k8s.component.build --git-url https://github.com/toolforge/buildpack-admission-controller
+...
+[DOLOGMSG]: build & push docker image docker-registry.tools.wmflabs.org/toolforge-buildpack-admission-controller:f90bd8f from https://github.com/toolforge/buildpack-admission-controller (f90bd8f)
+END (PASS) - Cookbook wmcs.toolforge.k8s.component.build (exit_code=0)
+```
+
+And now you have to create a new commit setting that tag (`f90bd8f`) in the `deployment/values/tools.yaml` and `deployment/values/toolsbeta.yaml` files, send that for review and get it merged.
+
+Once merged, you can deploy (see the next step).
+
+
+### Deploy the new image and/or deployment code
+
+
+To deploy you can use [cookbook](https://wikitech.wikimedia.org/wiki/Portal:Toolforge/Admin/Kubernetes/Components#Deploy):
+
+```
+cookbook wmcs.toolforge.k8s.component.deploy \
+    --git-url https://github.com/toolforge/buildpack-admission-controller \
+    --cluster-name toolsbeta
+```
