@@ -1,7 +1,7 @@
 replicas: 2
 
 image:
-  name: docker-registry.tools.wmflabs.org/buildpack-admission-controller
+  name: docker-registry.tools.wmflabs.org/toolforge-buildpack-admission-controller
   tag: latest
   pullPolicy: IfNotPresent
 
