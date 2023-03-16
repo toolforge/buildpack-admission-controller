@@ -12,7 +12,7 @@ type Config struct {
 	ListenOn        string   `default:"0.0.0.0:8080"`
 	TLSCert         string   `default:"/etc/webhook/certs/tls.crt"`
 	TLSKey          string   `default:"/etc/webhook/certs/tls.key"`
-	AllowedDomains  []string `default:"harbor.toolforge.org,harbor.toolsbeta.wmflabs.org"`
+	AllowedDomains  []string `default:"tools-harbor.wmcloud.org,toolsbeta-harbor.wmcloud.org"`
 	SystemUsers     []string `default:"system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"`
 	AllowedBuilders []string `default:"paketobuildpacks/builder:base,gcr.io/buildpacks/builder:v1,docker-registry.tools.wmflabs.org/toolforge-bullseye0-builder:latest"`
 	Debug           bool     `default:"true"`
