@@ -21,8 +21,8 @@ config:
   debug: false
 
   harborDomains:
-    - harbor.toolforge.org
-    - harbor.toolsbeta.wmflabs.org
+    - tools-harbor.wmcloud.org
+    - toolsbeta-harbor.wmcloud.org
 
   systemUsers:
     - "system:serviceaccount:tekton-pipelines:tekton-pipelines-controller"
