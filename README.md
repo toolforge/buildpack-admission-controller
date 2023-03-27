@@ -22,6 +22,13 @@ But sometimes (ex. debian bullseye) you will need to use the external IP of your
 
 **Build on minikube**
 
+Before you attempt to build on minikube, you need to make sure you have cert-manager installed.
+you can verify this by running:
+`kubectl get pods -n cert-manager`
+if you have cert-manager installed you will see the pods running.
+If cert-manager is not installed, clone https://gitlab.wikimedia.org/repos/cloud/toolforge/cert-manager
+and run the ./deploy.sh script
+
 To build on minikube (current supported k8s version is 1.21) and launch, just run:
   * (Launch a cluster if you have not already done so.)
   * `eval $(minikube docker-env)`
