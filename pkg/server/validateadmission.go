@@ -54,7 +54,7 @@ func (p *PipelineRunAdmission) HandleAdmission(review *admissionv1.AdmissionRevi
 		}
 	}
 	for _, param := range pipelinerun.Spec.Params {
-		expectedURL := fmt.Sprintf("^(https?://)?%s/%s/", domstr, user)
+		expectedURL := fmt.Sprintf("^(https?://)?%s/tool-%s/", domstr, user)
 		harborRe := regexp.MustCompile(expectedURL)
 		logrus.Debugf("Found PipeLineRun param: %v", param.Name)
 		switch param.Name {

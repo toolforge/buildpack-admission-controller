@@ -2,7 +2,7 @@ package server
 
 import (
 	"crypto/tls"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -30,7 +30,7 @@ type AdmissionControllerServer struct {
 
 func (acs *AdmissionControllerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var body []byte
-	if data, err := ioutil.ReadAll(r.Body); err == nil {
+	if data, err := io.ReadAll(r.Body); err == nil {
 		body = data
 	}
 	logrus.Debugln(string(body))

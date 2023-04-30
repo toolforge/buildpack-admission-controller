@@ -2,8 +2,8 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -19,6 +19,9 @@ import (
 )
 
 func getAdmissionReview(user string, builderImage string, appImage string, extraParams []map[string]string) admissionv1.AdmissionReview {
+	if user == "" {
+		user = "test"
+	}
 	if appImage == "" {
 		appImage = "toolsbeta-harbor.wmcloud.org/test4/python:snap"
 	}
@@ -57,9 +60,6 @@ func getAdmissionReview(user string, builderImage string, appImage string, extra
 			"params": params,
 		},
 	}
-	if user == "" {
-		user = "test"
-	}
 	rawObject, err := json.Marshal(jsonObject)
 	if err != nil {
 		logrus.Errorln(err)
@@ -88,7 +88,7 @@ func getAdmissionReview(user string, builderImage string, appImage string, extra
 }
 
 func decodeResponse(body io.ReadCloser) *admissionv1.AdmissionReview {
-	response, _ := ioutil.ReadAll(body)
+	response, _ := io.ReadAll(body)
 	review := &admissionv1.AdmissionReview{}
 	_, _, _ = codecs.UniversalDeserializer().Decode(response, nil, review)
 	return review
@@ -106,13 +106,14 @@ func TestServeReturnsCorrectJson(t *testing.T) {
 	goodUser := "gooduser"
 	goodDomain := "gooddomain"
 	goodBuilder := "good/builder:v1"
+	goodAppImage := fmt.Sprintf("%s/tool-%s/python:snap", goodDomain, goodUser)
 	inc := &PipelineRunAdmission{
 		AllowedDomains:  []string{goodDomain},
 		AllowedBuilders: []string{goodBuilder},
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(inc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{})
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodAppImage, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -143,13 +144,14 @@ func TestHookDoesNotAllowBadUserBadDomain(t *testing.T) {
 	badUser := "baduser"
 	badDomain := "baddomain"
 	goodBuilder := "good/builder:v1"
+	badAppImage := fmt.Sprintf("%s/tool-%s/python:snap", badDomain, badUser)
 	nsc := &PipelineRunAdmission{
 		AllowedDomains:  []string{"gooddomain"},
 		AllowedBuilders: []string{goodBuilder},
 		SystemUsers:     []string{"gooduser"},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	badAdmissionReview := getAdmissionReview(badUser, goodBuilder, badDomain, []map[string]string{})
+	badAdmissionReview := getAdmissionReview(badUser, goodBuilder, badAppImage, []map[string]string{})
 	requestString := string(encodeRequest(&badAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -164,13 +166,14 @@ func TestHookAllowsGoodUserBadDomain(t *testing.T) {
 	goodUser := "gooduser"
 	badDomain := "baddomain"
 	goodBuilder := "good/builder:v1"
+	badAppImage := fmt.Sprintf("%s/tool-%s/python:snap", badDomain, goodUser)
 	nsc := &PipelineRunAdmission{
 		AllowedDomains:  []string{"gooddomain"},
 		AllowedBuilders: []string{goodBuilder},
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, badDomain, []map[string]string{})
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, badAppImage, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -180,17 +183,19 @@ func TestHookAllowsGoodUserBadDomain(t *testing.T) {
 		t.Error("Failed to allow pipelinerun should have been allowed!")
 	}
 }
+
 func TestHookAllowsGoodUserGoodDomain(t *testing.T) {
 	goodUser := "gooduser"
 	goodDomain := "gooddomain"
 	goodBuilder := "good/builder:v1"
+	goodAppImage := fmt.Sprintf("%s/tool-%s/python:snap", goodDomain, goodUser)
 	nsc := &PipelineRunAdmission{
 		AllowedDomains:  []string{goodDomain},
 		AllowedBuilders: []string{goodBuilder},
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{})
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodAppImage, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -205,13 +210,14 @@ func TestHookAllowsGoodUserGoodDomainWithHTTPProtocol(t *testing.T) {
 	goodUser := "gooduser"
 	goodDomain := "gooddomain"
 	goodBuilder := "http://good/builder:v1"
+	goodAppImage := fmt.Sprintf("%s/tool-%s/python:snap", goodDomain, goodUser)
 	nsc := &PipelineRunAdmission{
 		AllowedDomains:  []string{goodDomain},
 		AllowedBuilders: []string{goodBuilder},
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{})
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodAppImage, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -226,13 +232,14 @@ func TestHookAllowsGoodUserGoodDomainWithHTTPSProtocol(t *testing.T) {
 	goodUser := "gooduser"
 	goodDomain := "gooddomain"
 	goodBuilder := "https://good/builder:v1"
+	goodAppImage := fmt.Sprintf("%s/tool-%s/python:snap", goodDomain, goodUser)
 	nsc := &PipelineRunAdmission{
 		AllowedDomains:  []string{goodDomain},
 		AllowedBuilders: []string{goodBuilder},
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{})
+	goodAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodAppImage, []map[string]string{})
 	requestString := string(encodeRequest(&goodAdmissionReview))
 	myr := strings.NewReader(requestString)
 	r, _ := http.Post(server.URL, "application/json", myr)
@@ -247,13 +254,14 @@ func TestHookDoesNotAllowUnvettedParameters(t *testing.T) {
 	goodUser := "gooduser"
 	goodDomain := "gooddomain"
 	goodBuilder := "https://good/builder:v1"
+	goodAppImage := fmt.Sprintf("%s/tool-%s/python:snap", goodDomain, goodUser)
 	nsc := &PipelineRunAdmission{
 		AllowedDomains:  []string{goodDomain},
 		AllowedBuilders: []string{goodBuilder},
 		SystemUsers:     []string{goodUser},
 	}
 	server := httptest.NewServer(GetAdmissionServerNoSSL(nsc, ":8080").Handler)
-	badAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodDomain, []map[string]string{
+	badAdmissionReview := getAdmissionReview(goodUser, goodBuilder, goodAppImage, []map[string]string{
 		{
 			"name":  "INVALID_PARAM",
 			"value": "not valid",
