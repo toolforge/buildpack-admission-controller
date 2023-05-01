@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-cat > $(dirname $0)/../values/local.yaml <<EOF
+cat > "$(dirname "$0")"/../values/local.yaml <<EOF
 image:
   name: buildpack-admission
   tag: latest
